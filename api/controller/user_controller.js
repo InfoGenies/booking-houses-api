@@ -3,6 +3,7 @@ const User = require('../model/userModel')
 const bcypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const baseUrl = "https://lazy-cyan-skunk-wig.cyclic.app"; 
+const path = require('path')
 
 
 exports.signUp =  (req, res) => {
