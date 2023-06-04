@@ -56,7 +56,7 @@ app.use(bodyParser.json());
  app.use('/houses', houseRouter)
 // app.use('/order', orderRouter)
 
-app.use('/login',userRouter)
+app.use('/user',userRouter)
 
 app.use((req, res, next) => {
     const error = new Error('Not found ')

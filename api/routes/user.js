@@ -9,22 +9,27 @@ const multer =  require('multer')
 const fs = require('fs')
 const path = require('path')
 const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-      // Specify the destination directory for storing the files
-      const uploadDir = path.join(__dirname, '../../', 'uploads');
-      if (!fs.existsSync(uploadDir)) {
-          fs.mkdirSync(uploadDir);
-      }
-      cb(null, uploadDir);
-  },
-  filename: function(req, file, cb) {
-      // Generate a unique filename for the uploaded file
-      const date = new Date().toISOString().replace(/:/g, '-');
-      cb(null, date + '-' + file.originalname);
+    destination: function(req, file, cb) {
+        // we use this line path.join to specify the real path automaticly
+      
+        let tempraryImageDirectory;
+
+if (process.env.DEV && process.env.DEV === 'Yes') {
+    tempraryImageDirectory = path.join(__dirname, `../../tmp/`);
+  } else {
+    tempraryImageDirectory = '/tmp/';
   }
+  
+        cb(null, tempraryImageDirectory);
+    },
+    filename: function(req, file, cb) {
+        const date = new Date().toISOString().replace(/:/g, '-');
+
+        cb(null, date + '-' + file.originalname);
+    }
 });
 const filterFile = (req, file, cb)=>{
-    if(file.mimetype === "image/png"){
+    if(file.mimetype === "image/png" || file.mimetype === "image/jpeg" ){
         // we give the permesion to store file(image that is png)
         cb(null,true)  
     }else{
@@ -38,7 +43,6 @@ const upload =  multer({storage : storage , limits: {
   },
   fileFilter : filterFile
 })
-
 
 // create the registratin route 
 router.post('/signUp',upload.single('picture'),UserController.signUp)

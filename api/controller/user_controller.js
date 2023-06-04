@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const User = require('../model/userModel')
 const bcypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
+const baseUrl = "https://lazy-cyan-skunk-wig.cyclic.app"; 
 
 
 exports.signUp =  (req, res) => {
@@ -67,7 +68,7 @@ exports.get_users = (req, res, next) => {
           users:doc.map(doc=>{
               return {
                   password: doc.password,
-                  picture : doc.picture ,
+                  picture : `${baseUrl}/tmp/${path.basename(doc.picture)}` ,
                   email: doc.email,
                   _id: doc._id,
                   username : doc.username,
@@ -78,7 +79,7 @@ exports.get_users = (req, res, next) => {
                   dateJoined : doc.dateJoined,
                   request: {
                       Type:'GET',
-                      url: 'http://127.0.0.1:3000/login/'+doc._id
+                      url: `${baseUrl}/user/${doc._id}`
                   }
               }
           })
