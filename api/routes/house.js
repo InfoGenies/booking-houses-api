@@ -1,6 +1,8 @@
 
 // here we try to create ours router 
 const express = require('express')
+const multer =  require('multer')
+
 const HouseController = require('../controller/house_controller')
 const checkAuth = require('../middleware/check-auth')
 const router = express.Router()
