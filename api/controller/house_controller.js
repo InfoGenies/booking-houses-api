@@ -98,20 +98,20 @@ exports.create_city = (req, res, next) => {
 
 
 
-/* 
-exports.get_products = (req, res, next) => {
+
+exports.get_city = (req, res, next) => {
     
-Product.find()
-.select('name price _id productImage')
+    City.find()
+.select('name picture')
 .exec()
 .then(doc => {
     console.log(doc)
     const response = {
         count: doc.length,
-        products:doc.map(doc=>{
+        cities:doc.map(doc=>{
             return {
                 name: doc.name,
-                price: doc.price,
+                price: doc.picture,
                 productImage: `${baseUrl}/tmp/${path.basename(doc.productImage)}`,
                 id:doc._id,
                 request: {
@@ -132,6 +132,7 @@ Product.find()
   
 
 }
+/*
 exports.get_product_byID =  (req, res, next) => {
     const id = req.params.productId
     Product.findById(id)
