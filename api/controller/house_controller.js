@@ -78,8 +78,7 @@ exports.create_city = (req, res, next) => {
     const city = new City({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
-        picture: req.body.picture,
-       
+        picture:req.file.path
       });
 
       city
@@ -111,12 +110,11 @@ exports.get_city = (req, res, next) => {
         cities:doc.map(doc=>{
             return {
                 name: doc.name,
-                price: doc.picture,
-                productImage: `${baseUrl}/tmp/${path.basename(doc.productImage)}`,
+                picture: `${baseUrl}/tmp/${path.basename(doc.picture)}`,
                 id:doc._id,
                 request: {
                     Type:'GET',
-                    url: `${baseUrl}/products/${doc._id}`
+                    url: `${baseUrl}/houses/city/${doc._id}`
                 }
             }
         })
