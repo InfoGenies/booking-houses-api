@@ -1,12 +1,15 @@
 const mongoose = require('mongoose')
 const path = require('path')
 
+
 const House = require('../model/houseModel')
 const Municipality = require('../model/municipalityModel')
 const City = require('../model/cityModel')
+const baseUrl = "https://lazy-cyan-skunk-wig.cyclic.app"; 
 
 
-const baseUrl = "http://localhost:3000"; 
+
+
 exports.create_house = (req, res, next) => {
 
     const house = new House({
