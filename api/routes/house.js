@@ -58,6 +58,9 @@ router.post('/create_picture',upload.single('picture'),HouseController.create_pi
 
 router.get('/city',HouseController.get_city)
 
+router.get('/fetch_house',HouseController.get_houses)
+
+
 router.delete('/deleteAllCity', HouseController.delete_all_city)
 
 router.get('/municipality',HouseController.get_municipality)

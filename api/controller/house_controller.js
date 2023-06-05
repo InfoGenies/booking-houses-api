@@ -122,6 +122,53 @@ exports.create_picture = (req, res, next) => {
  
 }
 
+exports.get_houses = (req, res, next) => {
+    
+  House.find()
+      .select('houseType title description rooms bathrooms kitchens bedrooms locationLatitude locationLongitude isAvailable stars numReviews createdAt owner municipality pictures')
+.exec()
+.then(doc => {
+  console.log(doc)
+  const response = {
+      count: doc.length,
+      cities:doc.map(doc=>{
+          return {
+              _id:doc._id,
+              houseType: doc.houseType,
+              title : doc.title ,
+              description : doc.description,
+              rooms : doc.rooms ,
+              bathrooms: doc.bathrooms ,
+              kitchens : doc.kitchens,
+              bedrooms: doc.bedrooms ,
+              locationLatitude : doc.locationLatitude,
+              locationLongitude: doc.locationLongitude ,
+              isAvailable : doc.isAvailable ,
+              stars : doc.stars ,
+              numReviews : doc.numReviews ,
+              createdAt : doc.createdAt ,
+              owner: doc.owner ,
+              municipality : doc.municipality ,
+              pictures : doc.pictures,
+              request: {
+                  Type:'GET',
+                  url: `${baseUrl}/houses/city/${doc._id}`
+              }
+          }
+      })
+  }
+  res.status(200).json(response)
+})
+.catch(err =>{
+  console.log(err)
+  res.status(500).json({
+      error: err
+  })
+})
+
+
+}
+
 
 exports.get_city = (req, res, next) => {
     
