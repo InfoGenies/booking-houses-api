@@ -81,7 +81,7 @@ exports.create_city = (req, res, next) => {
     const city = new City({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
-        picture:req.file.path
+        picture: req.file.path
       });
 
       city
@@ -97,9 +97,6 @@ exports.create_city = (req, res, next) => {
 )
    
 }
-
-
-
 
 exports.get_city = (req, res, next) => {
     
@@ -133,7 +130,7 @@ exports.get_city = (req, res, next) => {
   
 
 }
-exports.deleteAll =(req, res, next) => {
+exports.delete_all_city =(req, res, next) => {
   City.deleteMany({})
     .exec()
     .then(result => {
@@ -148,6 +145,39 @@ exports.deleteAll =(req, res, next) => {
         error: err
       });
     });
+}
+
+exports.get_municipality = (req, res, next) => {
+    
+  Municipality.find()
+.select('name city')
+.exec()
+.then(doc => {
+  console.log(doc)
+  const response = {
+      count: doc.length,
+      cities:doc.map(doc=>{
+          return {
+              name: doc.name,
+              city: doc.city,
+              id:doc._id,
+              request: {
+                  Type:'GET',
+                  url: `${baseUrl}/houses/city/${doc._id}`
+              }
+          }
+      })
+  }
+  res.status(200).json(response)
+})
+.catch(err =>{
+  console.log(err)
+  res.status(500).json({
+      error: err
+  })
+})
+
+
 }
 
 /*
