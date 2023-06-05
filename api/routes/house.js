@@ -62,6 +62,7 @@ router.delete('/deleteAllCity', HouseController.delete_all_city)
 
 router.get('/municipality',HouseController.get_municipality)
 
+router.get('/picutre',HouseController.get_picture)
 
 /* router.get('/',HouseController.get_house)
  

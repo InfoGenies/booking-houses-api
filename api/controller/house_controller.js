@@ -204,6 +204,38 @@ exports.get_municipality = (req, res, next) => {
 
 
 }
+exports.get_picture = (req, res, next) => {
+    
+  Picture.find()
+.select('picture isUrl')
+.exec()
+.then(doc => {
+  console.log(doc)
+  const response = {
+      count: doc.length,
+      cities:doc.map(doc=>{
+          return {
+              isUrl: doc.isUrl,
+              picture: `${baseUrl}/tmp/${path.basename(doc.picture)}`,
+              id:doc._id,
+              request: {
+                  Type:'GET',
+                  url: `${baseUrl}/houses/city/${doc._id}`
+              }
+          }
+      })
+  }
+  res.status(200).json(response)
+})
+.catch(err =>{
+  console.log(err)
+  res.status(500).json({
+      error: err
+  })
+})
+
+
+}
 
 /*
 exports.get_product_byID =  (req, res, next) => {
