@@ -77,7 +77,7 @@ app.use((error, req, res, next) => {
 
 //Connect to the database before listening
 connectDB().then(() => {
-    app.listen(PORT,"127.0.0.1", () => {
+    app.listen(PORT, () => {
         console.log("listening for requests");
     })
 })

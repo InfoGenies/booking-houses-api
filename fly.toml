@@ -1,13 +1,10 @@
-# fly.toml app configuration file generated for morning-fire-7479 on 2023-06-05T11:53:27+01:00
+# fly.toml app configuration file generated for booking-rest-api on 2023-06-05T12:20:55+01:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = "morning-fire-7479"
+app = "booking-rest-api"
 primary_region = "mad"
-
-[env]
-  PORT = "8080"
 
 [http_service]
   internal_port = 8080
