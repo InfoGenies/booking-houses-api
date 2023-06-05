@@ -4,6 +4,8 @@ const path = require('path')
 
 const House = require('../model/houseModel')
 const Municipality = require('../model/municipalityModel')
+const Picture = require('../model/pictureModel')
+
 const City = require('../model/cityModel')
 const baseUrl = "https://lazy-cyan-skunk-wig.cyclic.app"; 
 
@@ -97,6 +99,29 @@ exports.create_city = (req, res, next) => {
 )
    
 }
+
+exports.create_picture = (req, res, next) => {
+
+  const picture = new Picture({
+      _id: new mongoose.Types.ObjectId(),
+      picture: req.file.path,
+      isUrl: req.body.isUrl
+    });
+
+    picture
+      .save()
+      .then(result => {
+        console.log(result);
+        res.status(201).json({
+          message: "Created Picture successfully",
+          createdPicture: result
+        });
+
+}
+)
+ 
+}
+
 
 exports.get_city = (req, res, next) => {
     
