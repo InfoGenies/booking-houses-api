@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 
-const PORT = process.env.PORT || 8080
+const PORT = process.env.PORT || 3000
 
 const connectDB = async() => {
     try{
@@ -77,7 +77,7 @@ app.use((error, req, res, next) => {
 
 //Connect to the database before listening
 connectDB().then(() => {
-    app.listen(PORT, () => {
+    app.listen(PORT,"127.0.0.1", () => {
         console.log("listening for requests");
     })
 })
