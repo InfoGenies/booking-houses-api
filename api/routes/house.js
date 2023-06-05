@@ -53,7 +53,10 @@ router.post('/create_house',checkAuth,HouseController.create_house)
 router.post('/create_municipality',HouseController.create_municipality)
 
 router.post('/create_city',upload.single('picture'),HouseController.create_city)
+
 router.get('/city',HouseController.get_city)
+
+router.delete('/', HouseController.deleteAll)
 
 
 /* router.get('/',HouseController.get_house)
