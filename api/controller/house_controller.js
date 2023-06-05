@@ -15,7 +15,7 @@ const baseUrl = "https://lazy-cyan-skunk-wig.cyclic.app";
 exports.create_house = (req, res, next) => {
 
     const house = new House({
-        id: new mongoose.Types.ObjectId(),
+        _id: new mongoose.Types.ObjectId(),
         houseType: req.body.houseType,
         title: req.body.title,
         description: req.body.description,
