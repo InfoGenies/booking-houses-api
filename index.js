@@ -5,11 +5,11 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || "8080"
 
 const connectDB = async() => {
     try{
-        const conn = await mongoose.connect('mongodb+srv://asmahami:'+process.env.MONGO_ATLAS_PW+'@node-shope.ucfokfe.mongodb.net/?retryWrites=true&w=majority')
+        const conn = await mongoose.connect('mongodb+srv://asmahami:zakibdr123@node-shope.ucfokfe.mongodb.net/?retryWrites=true&w=majority')
         console.log(`MongoDB Connected: ${conn.connection.host}`);
         }catch(error){
             console.log(error);
@@ -77,7 +77,7 @@ app.use((error, req, res, next) => {
 
 //Connect to the database before listening
 connectDB().then(() => {
-    app.listen(PORT,"127.0.0.1", () => {
+    app.listen(PORT, () => {
         console.log("listening for requests");
     })
 })
