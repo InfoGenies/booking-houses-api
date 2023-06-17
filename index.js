@@ -3,13 +3,13 @@ const app = express()
 const morgan = require('morgan')
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-
+require('dotenv').config()
 
 const PORT = process.env.PORT || "8080"
 
 const connectDB = async() => {
     try{
-        const conn = await mongoose.connect('mongodb+srv://asmahami:zakibdr123@node-shope.ucfokfe.mongodb.net/?retryWrites=true&w=majority')
+        const conn = await mongoose.connect('mongodb+srv://asmahami:'+process.env.MONGO_ATLAS_PW+'@node-shope.ucfokfe.mongodb.net/?retryWrites=true&w=majority')
         console.log(`MongoDB Connected: ${conn.connection.host}`);
         }catch(error){
             console.log(error);
@@ -17,7 +17,6 @@ const connectDB = async() => {
           }
 
 }
-
 // getting the routing
  const houseRouter = require('./api/routes/house')
 // const orderRouter = require('./api/routes/order')
@@ -42,7 +41,7 @@ next()
 })
 
 // make the file that contain all images is accessible  (permission)
-app.use('/tmp', express.static('/tmp'));
+app.use('/uploads', express.static('uploads'));
 // body-parser is a popular middleware for Node.js used to parse(analyser) incoming request bodies
 // in a middleware before your handlers.
 app.use(bodyParser.urlencoded({ extended: false }));

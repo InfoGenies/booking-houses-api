@@ -3,6 +3,7 @@ const UserController  = require('../controller/user_controller')
 // this function *Router* give us the ability to handele different Routing with endpoint 
 const router = express.Router()
 const multer =  require('multer')
+const checkAuth = require('../middleware/check-auth')
 
 
 
@@ -10,17 +11,12 @@ const fs = require('fs')
 const path = require('path')
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
-        // we use this line path.join to specify the real path automaticly
-      
-        let tempraryImageDirectory;
-
-if (process.env.DEV && process.env.DEV === 'Yes') {
-    tempraryImageDirectory = path.join(__dirname, `../../tmp/`);
-  } else {
-    tempraryImageDirectory = '/tmp/';
-  }
+      const uploadDir = path.join(__dirname, '../../', 'uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir);
+    }
+    cb(null, uploadDir);
   
-        cb(null, tempraryImageDirectory);
     },
     filename: function(req, file, cb) {
         const date = new Date().toISOString().replace(/:/g, '-');
@@ -45,7 +41,7 @@ const upload =  multer({storage : storage , limits: {
 })
 
 // create the registratin route 
-router.post('/signUp',upload.single('picture'),UserController.signUp)
+router.post('/signUp',UserController.signUp)
 
 router.post('/signIn', UserController.signIn)
 // deleting the user by id 
@@ -57,7 +53,10 @@ router.delete('/', UserController.deleteAll);
 router.get('/', UserController.get_users)
   
   // fetching by id 
-router.get('/:userId',UserController.fetch_byID)
+router.get('/:userId',checkAuth,UserController.fetch_byID)
+
+router.put('/:userId',upload.single('picture'), UserController.updateUser);
+
 
 // this line means that if u want to use this function(router) in other file(class) u should export it  
 module.exports = router
