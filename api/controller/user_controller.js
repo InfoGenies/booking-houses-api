@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const User = require('../model/userModel')
 const bcypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
-const baseUrl = "https://booking-rest-api.fly.dev"; 
+const baseUrl = "https://house-booking-api.fly.dev"; 
 const path = require('path')
 
 

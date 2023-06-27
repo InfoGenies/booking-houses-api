@@ -5,9 +5,11 @@ const path = require('path')
 const House = require('../model/houseModel')
 const Municipality = require('../model/municipalityModel')
 const Picture = require('../model/pictureModel')
+const Offer = require('../model/offerModel')
+
 
 const City = require('../model/cityModel')
-const baseUrl = "https://lazy-cyan-skunk-wig.cyclic.app"; 
+const baseUrl = "https://house-booking-api.fly.dev"; 
 
 
 
@@ -39,7 +41,7 @@ exports.create_house = (req, res, next) => {
           console.log(result);
           res.status(201).json({
             message: "Created house successfully",
-            createdHouse: {
+            data: {
                 name: result.title,
                 price: result.description,
                 id: result._id,
@@ -54,6 +56,108 @@ exports.create_house = (req, res, next) => {
 )
    
 }
+
+exports.create_offer = async (req, res) => {
+  
+    const { houseId, userId, status, pricePerDay, rated, startDate, endDate } = req.body;
+
+    // Create a new offer instance
+    const offer = new Offer({
+      house: houseId,
+      user: userId,
+      status: status,
+      price_per_day: pricePerDay,
+      rated: rated,
+      start_date: startDate,
+      end_date: endDate
+    });
+
+    // Save the offer to the database
+    await offer.save()
+    .then(result => {
+      console.log(result);
+      res.status(201).json({ message: 'Offer created successfully', data : result  });
+}
+).catch(error => {
+    console.error('Error creating offer:', error);
+    res.status(500).json({ message: 'An error occurred while creating the offer' });
+  }
+  )
+}
+
+exports.get_house = (req, res, next) => {
+
+  const userId = req.params.houseId; // Get the user ID from the request parameters
+
+  House.findById(userId)
+      .select('houseType title description rooms bathrooms kitchens bedrooms locationLatitude locationLongitude isAvailable stars numReviews createdAt owner municipality pictures')
+.exec()
+.then(doc => {
+  console.log(doc)
+  res.status(200).json({
+    data: doc
+  })
+ 
+})
+.catch(err =>{
+  console.log(err)
+  res.status(500).json({
+      error: err
+  })
+})
+
+
+}
+
+exports.delete_house = (req, res, next) => {
+  const id = req.params.houseId
+
+  House.findByIdAndDelete(id)
+  .exec()
+  .then(result =>{
+      res.status(200).json({
+        data: 'house Deleted'
+      })
+  })
+  .catch(err =>{
+      res.status(200).json({error: err})
+  })
+
+}
+
+exports.update_house = (req, res, next) => {
+  const userId = req.params.userId; // Get the user ID from the request parameters
+
+  // Check if the request contains a file upload
+  if (req.file) {
+    // If a file is uploaded, include the picture field in the update operations
+    req.body.picture = req.file.path;
+  }
+
+  // Create an object with the updated user information
+  const updateOps = {};
+
+  for (const [key, value] of Object.entries(req.body)) {
+    if (value !== null && value !== undefined) {
+      updateOps[key] = value;
+    }
+  }
+
+  // Update the user document by ID
+  House.findByIdAndUpdate(userId, { $set: updateOps }, { new: true })
+    .exec()
+    .then(result => {
+      if (!result) {
+        return res.status(404).json({ message: 'House not found' , isUpdate: false });
+      }
+
+      res.status(200).json({ message: 'User updated successfully', user: result , isUpdate: true });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+};
 
 exports.create_municipality = (req, res, next) => {
 
@@ -131,7 +235,7 @@ exports.get_houses = (req, res, next) => {
   console.log(doc)
   const response = {
       count: doc.length,
-      cities:doc.map(doc=>{
+      data:doc.map(doc=>{
           return {
               _id:doc._id,
               houseType: doc.houseType,
@@ -169,6 +273,42 @@ exports.get_houses = (req, res, next) => {
 
 }
 
+exports.get_offers = (req, res, next) => {
+    
+  Offer.find()
+.select('status price_per_day rated start_date end_date created_at')
+.exec()
+.then(doc => {
+  console.log(doc)
+  const response = {
+      count: doc.length,
+      offers:doc.map(doc=>{
+          return {
+            id:doc._id,
+            status: doc.status,
+            price_per_day : doc.price_per_day,
+            rated : doc.rated ,
+            start_date : doc.start_date ,
+            end_date : doc.end_date ,
+            created_at : doc.created_at,
+              request: {
+                  Type:'GET',
+                  url: `${baseUrl}/offers/${doc._id}`
+              }
+          }
+      })
+  }
+  res.status(200).json(response)
+})
+.catch(err =>{
+  console.log(err)
+  res.status(500).json({
+      error: err
+  })
+})
+
+
+}
 
 exports.get_city = (req, res, next) => {
     
@@ -228,7 +368,7 @@ exports.get_municipality = (req, res, next) => {
   console.log(doc)
   const response = {
       count: doc.length,
-      cities:doc.map(doc=>{
+      municipality:doc.map(doc=>{
           return {
               name: doc.name,
               city: doc.city,
@@ -282,6 +422,50 @@ exports.get_picture = (req, res, next) => {
 })
 
 
+}
+
+// Get houses by city ID
+exports.getHousesByCity = async (req, res) => {
+  try {
+    const { cityId } = req.params;
+
+    // Find the municipality with the specified city ID
+    const municipality = await Municipality.findOne({ city: cityId });
+
+    if (!municipality) {
+      return res.status(404).json({ error: 'House not found' });
+    }
+
+    // Find houses with the matching municipality ID
+    const houses = await House.find({ municipality: municipality._id });
+
+    res.json({
+      data : houses
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.delete_picture =async (req, res, next) =>{
+  
+  const pictureId = req.params.pictureId; // Assuming the picture ID is passed as a route parameter
+
+   await Picture.findByIdAndRemove(pictureId)
+    .exec()
+    .then(result => {
+      res.status(200).json({
+        message: 'picture deleted',
+        result: result
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({
+        error: err
+      });
+    });
 }
 
 /*

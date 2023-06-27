@@ -11,17 +11,12 @@ const router = express.Router()
 const path = require('path')
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
-        // we use this line path.join to specify the real path automaticly
-      
-        let tempraryImageDirectory;
-
-if (process.env.DEV && process.env.DEV === 'Yes') {
-    tempraryImageDirectory = path.join(__dirname, `../../tmp/`);
-  } else {
-    tempraryImageDirectory = '/tmp/';
-  }
+      const uploadDir = path.join(__dirname, '../../', 'uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir);
+    }
+    cb(null, uploadDir);
   
-        cb(null, tempraryImageDirectory);
     },
     filename: function(req, file, cb) {
         const date = new Date().toISOString().replace(/:/g, '-');
@@ -50,6 +45,18 @@ const upload =  multer({storage : storage , limits: {
 
 router.post('/create_house',checkAuth,HouseController.create_house)
 
+// router.put('/update_house/:houseId',upload.single('picture'),checkAuth,HouseController.update_house)
+
+router.delete('/update_house/:houseId',checkAuth,HouseController.delete_house)
+
+router.get('/update_house/:houseId',checkAuth,HouseController.get_house)
+
+
+router.post('/create_offer',HouseController.create_offer)
+
+router.get('/fetch_offers', HouseController.get_offers);
+
+
 router.post('/create_municipality',HouseController.create_municipality)
 
 router.post('/create_city',upload.single('picture'),HouseController.create_city)
@@ -66,6 +73,12 @@ router.delete('/deleteAllCity', HouseController.delete_all_city)
 router.get('/municipality',HouseController.get_municipality)
 
 router.get('/picutre',HouseController.get_picture)
+
+router.delete('/picture/:pictureId',HouseController.delete_picture)
+
+
+router.get('/fetch_house/city/:cityId', HouseController.getHousesByCity);
+
 
 /* router.get('/',HouseController.get_house)
  

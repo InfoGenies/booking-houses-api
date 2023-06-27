@@ -55,7 +55,7 @@ router.get('/', UserController.get_users)
   // fetching by id 
 router.get('/:userId',checkAuth,UserController.fetch_byID)
 
-router.put('/:userId',upload.single('picture'), UserController.updateUser);
+router.patch('/:userId',upload.single('picture'), UserController.updateUser);
 
 
 // this line means that if u want to use this function(router) in other file(class) u should export it  

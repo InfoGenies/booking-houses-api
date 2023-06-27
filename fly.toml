@@ -1,14 +1,14 @@
-# fly.toml app configuration file generated for booking-rest-api on 2023-06-17T15:47:53+01:00
+# fly.toml app configuration file generated for house-booking-api on 2023-06-17T16:38:09+01:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = "booking-rest-api"
+app = "house-booking-api"
 primary_region = "mad"
 
 [[mounts]]
   source = "uploads"
-  destination = "/uploads"
+  destination = "/app/uploads"
 
 [http_service]
   internal_port = 8080
