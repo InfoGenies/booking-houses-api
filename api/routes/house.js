@@ -7,7 +7,7 @@ const HouseController = require('../controller/house_controller')
 const checkAuth = require('../middleware/check-auth')
 const router = express.Router()
 
-
+const fs = require('fs')
 const path = require('path')
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
@@ -43,19 +43,49 @@ const upload =  multer({storage : storage , limits: {
 
 
 
-router.post('/create_house',checkAuth,HouseController.create_house)
+router.post('/create_house',checkAuth,upload.none(),HouseController.create_house)
 
-// router.put('/update_house/:houseId',upload.single('picture'),checkAuth,HouseController.update_house)
+ router.patch('/update_house/:houseId',upload.single('picture'),checkAuth,HouseController.update_house)
 
 router.delete('/update_house/:houseId',checkAuth,HouseController.delete_house)
 
-router.get('/update_house/:houseId',checkAuth,HouseController.get_house)
+router.get('/house/:houseId',checkAuth,HouseController.get_house)
 
 
-router.post('/create_offer',HouseController.create_offer)
+router.post('/create_offer',upload.none(),HouseController.create_offer)
+
+router.post('/create_rating',upload.none(),HouseController.create_rating)
+
+
+router.post('/create_favorite',HouseController.create_favorite)
 
 router.get('/fetch_offers', HouseController.get_offers);
 
+router.get('/fetch_favorites', HouseController.get_favorites);
+
+router.get('/fetch_rating/:houseId', HouseController.get_rating);
+
+router.get('/fetch_favorites/:userId', HouseController.get_favorite);
+
+router.delete('/favorites/:favId',HouseController.delete_favorites)
+
+
+
+
+
+router.get('/offer/:offerId',HouseController.get_offer)
+
+
+router.delete('/offers/:offerId',HouseController.delete_offer)
+
+// By default, express does not parse form-data automatically
+// To handle form-data , you'll need to add additional middleware(Multer) to parse the form-data
+
+router.patch('/offers/:offerId',upload.none(),HouseController.update_offer)
+
+router.patch('/municipality/:municipalityId',upload.none(),HouseController.update_municipality)
+
+router.patch('/offers/status/:offerId',HouseController.update_offer_status)
 
 router.post('/create_municipality',HouseController.create_municipality)
 
@@ -70,11 +100,17 @@ router.get('/fetch_house',HouseController.get_houses)
 
 router.delete('/deleteAllCity', HouseController.delete_all_city)
 
+router.delete('/deleteCity/:cityId', HouseController.delete_city)
+
+
 router.get('/municipality',HouseController.get_municipality)
 
 router.get('/picutre',HouseController.get_picture)
 
 router.delete('/picture/:pictureId',HouseController.delete_picture)
+
+router.delete('/municipality/:municipalityId',HouseController.delete_municipality)
+
 
 
 router.get('/fetch_house/city/:cityId', HouseController.getHousesByCity);

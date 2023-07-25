@@ -41,7 +41,7 @@ next()
 })
 
 // make the file that contain all images is accessible  (permission)
-app.use('/uploads', express.static('uploads'));
+app.use('/app/uploads', express.static('uploads'));
 // body-parser is a popular middleware for Node.js used to parse(analyser) incoming request bodies
 // in a middleware before your handlers.
 app.use(bodyParser.urlencoded({ extended: false }));
