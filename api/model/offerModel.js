@@ -11,8 +11,8 @@ const offerSchema = new mongoose.Schema({
   },
   price_per_day: { type: Number, default: 0.0, required: true },
   rated: { type: Boolean, default: false },
-  start_date: { type: Date },
-  end_date: { type: Date },
+  start_date: { type: Date ,default: Date.now },
+  end_date: { type: Date , default: Date.now},
   created_at: { type: Date, default: Date.now }
 });
 

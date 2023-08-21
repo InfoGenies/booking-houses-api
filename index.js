@@ -30,18 +30,19 @@ app.use(morgan('dev'));
 //  for incoming HTTP requests.
 //  The code sets the required HTTP headers that allow resources on a web page to be requested
  // from a different domain than the one which served the initial page.
-app.use((req,res,next)=>{
+ app.use((req,res,next)=>{
     res.header('Access-Control-Allow-Origin','*')
     res.header('Access-Control-Allow-Headers','Origin, X-Requested-With, Content-Type, Accept, Authorization')
-if( req.method === 'OPTIONS'){
-    res.header('Access-Control-Allow-Methods','PUT, POST,PATCH ,DELETE,GET')
-    return res.status(200).json({})
-}
-next()
+    if( req.method === 'OPTIONS'){
+        res.header('Access-Control-Allow-Methods','PUT, POST,PATCH ,DELETE,GET')
+        return res.status(200).json({})
+    }
+    next()
 })
 
 // make the file that contain all images is accessible  (permission)
 app.use('/app/uploads', express.static('uploads'));
+app.use('/uploads', express.static('uploads'));
 // body-parser is a popular middleware for Node.js used to parse(analyser) incoming request bodies
 // in a middleware before your handlers.
 app.use(bodyParser.urlencoded({ extended: false }));

@@ -20,73 +20,84 @@ const baseUrl = "https://house-booking-api.fly.dev";
 
 
 
-exports.create_house = (req, res, next) => {
-  const {
-    houseType,
-    title,
-    description,
-    rooms,
-    bathrooms,
-    kitchens,
-    bedrooms,
-    locationLatitude,
-    locationLongitude,
-    isAvailable,
-    stars,
-    numReviews,
-    createdAt,
-    userId,
-    municipalityId,
-    picturesId
-  } = req.body;
-
-  const house = new House({
-    _id: new mongoose.Types.ObjectId(),
-    houseType: houseType,
-    title: title,
-    description: description,
-    rooms: rooms,
-    bathrooms: bathrooms,
-    kitchens: kitchens,
-    bedrooms: bedrooms,
-    locationLatitude: locationLatitude,
-    locationLongitude: locationLongitude,
-    isAvailable: isAvailable,
-    stars: stars,
-    numReviews: numReviews,
-    createdAt: createdAt,
-    owner: userId,
-    municipality: municipalityId,
-    pictures: picturesId.map(pictureId => mongoose.Types.ObjectId.createFromHexString(pictureId))
-  });
-
-  house
-    .save()
-    .then(result => {
-      console.log(result);
-      res.status(201).json({
-        message: "Created house successfully",
-        data: {
-          name: result.title,
-          price: result.description,
-          id: result._id,
-          request: {
-            type: 'GET',
-            url: `${baseUrl}/houses/${result._id}`
-          }
-        }
+exports.create_house = async (req, res, next) => {
+  try {
+    // Step 1: Create and save multiple pictures
+    const pictures = [];
+    for (const file of req.files) {
+      const picture = new Picture({
+        _id: new mongoose.Types.ObjectId(),
+        picture: file.path,
+        isUrl: req.body.isUrl,
       });
-    })
-    .catch(error => {
-      console.error(error);
-      res.status(500).json({
-        error: error.message
-      });
+
+      const savedPicture = await picture.save();
+      pictures.push(savedPicture._id);
+    }
+
+    // Step 2: Create the house with the picture references
+    const {
+      houseType,
+      title,
+      description,
+      rooms,
+      bathrooms,
+      kitchens,
+      bedrooms,
+      locationLatitude,
+      locationLongitude,
+      isAvailable,
+      stars,
+      numReviews,
+      createdAt,
+      userId,
+      municipalityId,
+    } = req.body;
+
+    const house = new House({
+      _id: new mongoose.Types.ObjectId(),
+      houseType: houseType,
+      title: title,
+      description: description,
+      rooms: rooms,
+      bathrooms: bathrooms,
+      kitchens: kitchens,
+      bedrooms: bedrooms,
+      locationLatitude: locationLatitude,
+      locationLongitude: locationLongitude,
+      isAvailable: isAvailable,
+      stars: stars,
+      numReviews: numReviews,
+      createdAt: createdAt,
+      owner: userId,
+      municipality: municipalityId,
+      pictures: pictures, // Link the pictures to the house using the _ids obtained above
     });
-}
+
+    // Save the house to the database
+    const savedHouse = await house.save();
+
+    res.status(201).json({
+      message: 'Created house successfully',
+      data: {
+        name: savedHouse.title,
+        price: savedHouse.description,
+        id: savedHouse._id,
+        request: {
+          type: 'GET',
+          url: `${baseUrl}/houses/${savedHouse._id}`,
+        },
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
+};
 exports.create_offer = async (req, res) => {
   
-    const { houseId, userId, status, pricePerDay, rated, startDate, endDate } = req.body;
+    const { houseId, userId, status, price_per_day, rated} = req.body;
 
     // Create a new offer instance
     const offer = new Offer({
@@ -94,10 +105,8 @@ exports.create_offer = async (req, res) => {
       house: houseId,
       user: userId,
       status: status,
-      price_per_day: pricePerDay,
-      rated: rated,
-      start_date: startDate,
-      end_date: endDate
+      price_per_day: price_per_day,
+      rated: rated
     });
 
     // Save the offer to the database
@@ -306,57 +315,126 @@ exports.get_house = (req, res, next) => {
 
 }
 
-exports.delete_house = (req, res, next) => {
-  const id = req.params.houseId
 
-  House.findByIdAndDelete(id)
-  .exec()
-  .then(result =>{
-      res.status(200).json({
-        data: 'house Deleted'
-      })
-  })
-  .catch(err =>{
-      res.status(200).json({error: err})
-  })
+exports.get_house_by_user_id = (req, res, next) => {
+
+  // Get the user ID from the request parameters
+ const userId = req.params.userId;
+
+ House.find({owner: userId })
+     .select('houseType title description rooms bathrooms kitchens bedrooms locationLatitude locationLongitude isAvailable stars numReviews createdAt owner municipality pictures')
+     .populate({
+      path: 'municipality',
+      select: '_id name city',
+      populate: {
+        path: 'city',
+        select: '_id name picture',
+      }
+     })
+     .populate('owner', '_id email password picture username phone language aboutMe userType dateJoined')
+     .populate({
+      path: 'pictures',
+      select: '_id picture isUrl',
+    })
+
+.exec()
+.then(doc => {
+ console.log(doc)
+ res.status(200).json({
+   data: doc
+ })
+
+})
+.catch(err =>{
+ console.log(err)
+ res.status(500).json({
+     error: err
+ })
+})
+
 
 }
 
-exports.update_house = (req, res, next) => {
-  // Get the user ID from the request parameters
-  const houseId = req.params.houseId; 
-  
 
-  // Check if the request contains a file upload
-  if (req.file) {
-    // If a file is uploaded, include the picture field in the update operations
-    req.body.picture = req.file.path;
-  }
 
-  // Create an object with the updated user information
-  const updateOps = {};
+exports.delete_house = async (req, res, next) => {
+  const houseId = req.params.houseId;
 
-  for (const [key, value] of Object.entries(req.body)) {
-    if (value !== null && value !== undefined) {
-      updateOps[key] = value;
+  try {
+    const house = await House.findById(houseId);
+    if (!house) {
+      return res.status(404).json({
+        error: 'House not found'
+      });
     }
+
+    // Delete associated offers
+    await Offer.deleteMany({ house: houseId });
+
+    // Delete the house itself
+    await House.deleteOne({ _id: houseId });
+
+
+    res.status(200).json({
+      data: 'House and associated offers deleted successfully'
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err.message
+    });
   }
 
-  // Update the user document by ID
-  House.findByIdAndUpdate(houseId, { $set: updateOps }, { new: true })
-    .exec()
-    .then(result => {
-      if (!result) {
-        return res.status(404).json({ message: 'House not found' , isUpdate: false });
+}
+
+exports.update_house = async (req, res, next) => {
+  const houseId = req.params.houseId;
+
+  try {
+    // Check if the request contains file uploads (pictures)
+    if (req.files && req.files.length > 0) {
+      const picturePaths = req.files.map(file => file.path);
+      const pictureIds = [];
+
+      for (const path of picturePaths) {
+        const picture = new Picture({
+          _id: new mongoose.Types.ObjectId(),
+          picture: path,
+          isUrl: req.body.isUrl,
+        });
+
+        const savedPicture = await picture.save();
+        pictureIds.push(savedPicture._id);
       }
 
-      res.status(200).json({ message: 'User updated successfully', user: result , isUpdate: true });
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json({ error: err });
-    });
+      // Update the house's pictures array with new picture IDs
+      await House.findByIdAndUpdate(
+        houseId,
+        { $push: { pictures: { $each: pictureIds } } },
+        { new: true }
+      );
+    }
+
+    // Create an object with the updated information for non-picture fields
+    const updateOps = {};
+
+    for (const [key, value] of Object.entries(req.body)) {
+      if (key !== 'pictures' && value !== null && value !== undefined) {
+        updateOps[key] = value;
+      }
+    }
+
+    // Update the non-picture fields if there are any updates
+    if (Object.keys(updateOps).length > 0) {
+      await House.findByIdAndUpdate(houseId, { $set: updateOps }, { new: true });
+    }
+
+    res.status(200).json({ message: 'House updated successfully' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
 };
+
 
 exports.create_municipality = (req, res, next) => {
 
@@ -413,7 +491,7 @@ exports.create_picture = (req, res, next) => {
   picture
     .save()
     .then((result) => {
-      console.log(result);
+      
       res.status(201).json({
         message: "Created Picture successfully",
         createdPicture: result,
@@ -579,6 +657,72 @@ exports.get_offers = (req, res, next) => {
     });
 };
 
+exports.getOffersByHouse = async (req, res) => {
+  const houseId = req.params.houseId;
+
+  
+    const offers = await Offer.find({ house: houseId }).
+    select('house user status price_per_day rated start_date end_date created_at')
+    .populate({
+      path: 'house',
+      select: '_id houseType title description rooms bathrooms kitchens bedrooms locationLatitude locationLongitude isAvailable stars numReviews createdAt',
+      populate: [
+        {
+          path: 'owner',
+          select: '_id email password picture username phone language aboutMe userType dateJoined',
+        },
+        {
+          path: 'municipality',
+          select: '_id name city',
+          populate: {
+            path: 'city',
+            select: '_id name picture',
+          },
+        },
+        {
+          path: 'pictures',
+          select: '_id picture isUrl',
+        },
+      ]
+    })
+    .populate({
+      path: 'user',
+      select: '_id email password picture username phone language aboutMe userType dateJoined'
+    })
+    .exec()
+    .then((doc) => {
+      console.log(doc);
+      const response = {
+        count: doc.length,
+        offers: doc.map((doc) => {
+          return {
+            _id: doc._id,
+            status: doc.status,
+            price_per_day: doc.price_per_day,
+            rated: doc.rated,
+            start_date: doc.start_date,
+            end_date: doc.end_date,
+            created_at: doc.created_at,
+            house: doc.house,
+            user: doc.user,
+            request: {
+              Type: 'GET',
+              url: `${baseUrl}/houses/offer/${doc._id}`
+            }
+          };
+        })
+      };
+      res.status(200).json(response);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({
+        error: err
+      });
+    });
+
+ 
+};
 
 exports.get_favorites = (req, res, next) => {
   Favorite.find()
@@ -801,7 +945,7 @@ exports.get_city = (req, res, next) => {
             return {
                 name: doc.name,
                 picture: pictureUrl,
-                id:doc._id,
+                _id:doc._id,
                 request: {
                     Type:'GET',
                     url: `${baseUrl}/houses/city/${doc._id}`
@@ -869,6 +1013,46 @@ exports.get_municipality = (req, res, next) => {
 
 
 }
+
+
+exports.get_municipality_by_city = (req, res, next) => {
+  const cityId = req.params.cityId;
+
+  Municipality.find({ city: cityId })
+.select('name city')
+.populate({
+  path: 'city',
+  select: 'id name picture',
+})
+.exec()
+.then(doc => {
+  console.log(doc)
+  const response = {
+      count: doc.length,
+      municipality:doc.map(doc=>{
+          return {
+            id:doc._id,
+              name: doc.name,
+              city: doc.city,              
+              request: {
+                  Type:'GET',
+                  url: `${baseUrl}/houses/city/${doc._id}`
+              }
+          }
+      })
+  }
+  res.status(200).json(response)
+})
+.catch(err =>{
+  console.log(err)
+  res.status(500).json({
+      error: err
+  })
+})
+
+
+}
+
 exports.get_picture = (req, res, next) => {
     
   Picture.find()
@@ -884,7 +1068,7 @@ exports.get_picture = (req, res, next) => {
           return {
               isUrl: doc.isUrl,
               picture: pictureUrl,
-              id:doc._id,
+              _id:doc._id,
               request: {
                   Type:'GET',
                   url: `${baseUrl}/houses/city/${doc._id}`

@@ -31,7 +31,7 @@ exports.signUp = (req, res) => {
                 const token = jwt.sign(
                   { userId: user._id },
                   process.env.JWT_KEY,
-                  { expiresIn: '1h' }
+                  { expiresIn: '1d' }
                 );
                 res.status(201).json({
                   message: 'User created successfully',
@@ -157,9 +157,8 @@ exports.deleteAll = (req, res, next) => {
 }
 exports.fetch_byID = (req, res, next) => {
   const id = req.params.userId
-  console.log('the user id is '+id)
   User.findById(id)
-  .select('_id email password username phone language aboutMe userType  dateJoined')
+  .select('_id email picture password username phone language aboutMe userType  dateJoined')
   .exec()
   .then(doc=>{
       console.log(doc)
