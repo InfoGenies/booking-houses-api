@@ -3,13 +3,15 @@ const UserController  = require('../controller/user_controller')
 // this function *Router* give us the ability to handele different Routing with endpoint 
 const router = express.Router()
 const multer =  require('multer')
+
+// the Midele i jsute to prevent any operation without if the user not authentified 
+
 const checkAuth = require('../middleware/check-auth')
 
 
-
-const fs = require('fs')
+/*const fs = require('fs')
 const path = require('path')
-const storage = multer.diskStorage({
+ const storage = multer.diskStorage({
     destination: function(req, file, cb) {
       const uploadDir = path.join(__dirname, '../../', 'uploads');
       if (!fs.existsSync(uploadDir)) {
@@ -39,6 +41,19 @@ const upload =  multer({storage : storage , limits: {
   },
   fileFilter : filterFile
 })
+ */
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
 
 // create the registratin route 
 router.post('/signUp',UserController.signUp)

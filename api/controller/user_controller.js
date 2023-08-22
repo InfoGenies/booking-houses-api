@@ -27,11 +27,11 @@ exports.signUp = (req, res) => {
 
             user
               .save()
-              .then((result) => {
+              .then((res) => {
                 const token = jwt.sign(
                   { userId: user._id },
                   process.env.JWT_KEY,
-                  { expiresIn: '1d' }
+                  { expiresIn: '30d' }
                 );
                 res.status(201).json({
                   message: 'User created successfully',
@@ -109,7 +109,7 @@ exports.signIn = async (req, res) => {
       return;
     }
 
-    const token = jwt.sign({ userId: user._id },process.env.JWT_KEY, { expiresIn: '4h' });
+    const token = jwt.sign({ userId: user._id },process.env.JWT_KEY, { expiresIn: '30h' });
     res.status(200).json( 
       {
        message : 'Authenification Succfully',

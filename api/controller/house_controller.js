@@ -657,6 +657,87 @@ exports.get_offers = (req, res, next) => {
     });
 };
 
+
+exports.getOffersByCity = async (req, res) => {
+  
+    const cityId = req.params.cityId;
+
+    // Find municipalities with matching city ID
+    const municipalitiesInCity = await Municipality.find({ city: cityId }).exec();
+
+    // Get the municipality IDs from the municipalities
+    const municipalityIds = municipalitiesInCity.map(municipality => municipality._id);
+
+    // Find houses with matching municipalities
+    const housesInMunicipalities = await House.find({ municipality: { $in: municipalityIds } }).exec();
+
+    // Get the house IDs from the houses
+    const houseIds = housesInMunicipalities.map(house => house._id);
+
+    // Fetch offers based on the found house IDs
+   await Offer.find({ house: { $in: houseIds } }).  
+   select('house user status price_per_day rated start_date end_date created_at')
+   .populate({
+     path: 'house',
+     select: '_id houseType title description rooms bathrooms kitchens bedrooms locationLatitude locationLongitude isAvailable stars numReviews createdAt',
+     populate: [
+       {
+         path: 'owner',
+         select: '_id email password picture username phone language aboutMe userType dateJoined',
+       },
+       {
+         path: 'municipality',
+         select: '_id name city',
+         populate: {
+           path: 'city',
+           select: '_id name picture',
+         },
+       },
+       {
+         path: 'pictures',
+         select: '_id picture isUrl',
+       },
+     ]
+   })
+   .populate({
+     path: 'user',
+     select: '_id email password picture username phone language aboutMe userType dateJoined'
+   })
+   .exec()
+   .then((doc) => {
+     console.log(doc);
+     const response = {
+       count: doc.length,
+       offers: doc.map((doc) => {
+         return {
+           _id: doc._id,
+           status: doc.status,
+           price_per_day: doc.price_per_day,
+           rated: doc.rated,
+           start_date: doc.start_date,
+           end_date: doc.end_date,
+           created_at: doc.created_at,
+           house: doc.house,
+           user: doc.user,
+           request: {
+             Type: 'GET',
+             url: `${baseUrl}/houses/offer/${doc._id}`
+           }
+         };
+       })
+     };
+     res.status(200).json(response);
+   })
+   .catch((err) => {
+     console.log(err);
+     res.status(500).json({
+       error: err
+     });
+   });
+   
+};
+
+
 exports.getOffersByHouse = async (req, res) => {
   const houseId = req.params.houseId;
 

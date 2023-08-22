@@ -7,22 +7,11 @@ const HouseController = require('../controller/house_controller')
 const checkAuth = require('../middleware/check-auth')
 const router = express.Router()
 
-const fs = require('fs')
+
+/* const fs = require('fs')
 const path = require('path')
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-      cb(null, file.originalname);
-    },
-  });
-  
-  const upload = multer({ storage });
-
-
-/* const storage = multer.diskStorage({
+ const storage = multer.diskStorage({
     destination: function(req, file, cb) {
       const uploadDir = path.join(__dirname, '../../', 'uploads');
       if (!fs.existsSync(uploadDir)) {
@@ -62,6 +51,17 @@ const upload =  multer({storage : storage , limits: {
 
  */
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
 
 router.post('/create_house',upload.array('picture', 10),HouseController.create_house)
 
@@ -85,6 +85,8 @@ router.post('/create_favorite',HouseController.create_favorite)
 router.get('/fetch_offers', HouseController.get_offers);
 
 router.get('/fetch_offers/house/:houseId', HouseController.getOffersByHouse);
+
+router.get('/fetch_offers/city/:cityId', HouseController.getOffersByCity);
 
 
 router.get('/fetch_favorites', HouseController.get_favorites);
