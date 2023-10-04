@@ -1,7 +1,6 @@
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
-const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 require('dotenv').config()
 
@@ -43,10 +42,11 @@ app.use(morgan('dev'));
 // make the file that contain all images is accessible  (permission)
 app.use('/app/uploads', express.static('uploads'));
 app.use('/uploads', express.static('uploads'));
-// body-parser is a popular middleware for Node.js used to parse(analyser) incoming request bodies
-// in a middleware before your handlers.
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+
+// Middleware for parsing JSON data and URL-encoded form data
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
 
 
 // *use()* is Middleware, which are functions that can be executed before or after a request is
